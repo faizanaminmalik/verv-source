@@ -1,0 +1,242 @@
+🛠️ DevOps Lab: Full Stack Observability
+Topic: Monitoring Linux, Docker, Python (Flask), and Ansible using Prometheus & Grafana. Goal: Build a real-time monitoring dashboard that tracks server health, container status, application performance, and automation success.
+
+🏗️ Architecture Overview
+We are building a "pull-based" monitoring system.
+
+Prometheus is the central brain. It "scrapes" (pulls) data every 5 seconds.
+
+Exporters (Node, cAdvisor, Flask) expose metrics on HTTP ports.
+
+Pushgateway acts as a mailbox for short-lived jobs (Ansible) to drop off their metrics.
+
+Grafana visualizes the data.
+
+📋 Prerequisites
+A Linux machine (Ubuntu preferred) or VM.
+
+docker and docker-compose installed.
+
+python3 and pip installed.
+
+ansible installed.
+
+Part 1: The Infrastructure (Docker Compose)
+We will run the monitoring stack in containers to keep the host clean.
+
+1. Create a project folder:
+
+Bash
+
+mkdir devops_monitoring
+cd devops_monitoring
+2. Create docker-compose.yml:
+
+YAML
+
+version: '3.8'
+
+services:
+  # --- The Database ---
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    ports:
+      - "9090:9090"
+
+  # --- The Dashboard ---
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+
+  # --- Linux Metrics Exporter ---
+  node_exporter:
+    image: prom/node-exporter:latest
+    container_name: node_exporter
+    ports:
+      - "9100:9100"
+
+  # --- Docker Metrics Exporter ---
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    ports:
+      - "8080:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+
+  # --- Ansible Metrics Gateway ---
+  pushgateway:
+    image: prom/pushgateway
+    container_name: pushgateway
+    ports:
+      - "9091:9091"
+Part 2: Configuration
+Tell Prometheus where to find the data.
+
+1. Create prometheus.yml:
+
+YAML
+
+global:
+  scrape_interval: 5s # Get data every 5 seconds
+
+scrape_configs:
+  # Linux System Metrics
+  - job_name: 'linux_host'
+    static_configs:
+      - targets: ['node_exporter:9100']
+
+  # Docker Container Metrics
+  - job_name: 'docker_containers'
+    static_configs:
+      - targets: ['cadvisor:8080']
+
+  # Ansible Job Status (Pushgateway)
+  - job_name: 'ansible_jobs'
+    static_configs:
+      - targets: ['pushgateway:9091']
+      
+  # Python App (Running on Host)
+  - job_name: 'flask_app'
+    static_configs:
+      - targets: ['host.docker.internal:5000'] 
+Note: host.docker.internal allows the container to talk to the Flask app running natively on your laptop/VM.
+
+Part 3: The Application (Flask)
+We will simulate a web app that reports its own health.
+
+1. Install the library:
+
+Bash
+
+pip3 install flask prometheus-flask-exporter
+2. Create app.py:
+
+Python
+
+from flask import Flask
+from prometheus_flask_exporter import PrometheusMetrics
+import random
+import time
+
+app = Flask(__name__)
+# Enable Metrics
+metrics = PrometheusMetrics(app)
+
+@app.route('/')
+def main():
+    return "App is running!"
+
+@app.route('/fast')
+def fast():
+    return "That was fast!"
+
+@app.route('/slow')
+def slow():
+    time.sleep(2) # Simulate slow database query
+    return "Sorry for the delay."
+
+@app.route('/error')
+def broken():
+    return 1/0  # This triggers a 500 error
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
+Part 4: The Automation (Ansible)
+We will create a playbook that reports its success/failure status.
+
+1. Create monitor_playbook.yml:
+
+YAML
+
+---
+- name: Automated Task with Monitoring
+  hosts: localhost
+  connection: local
+  tasks:
+    
+    # 1. Simulate a Task
+    - name: Check if Nginx is installed
+      shell: which nginx
+      register: result
+      ignore_errors: yes
+
+    # 2. Push Status to Prometheus
+    - name: Push Success Metric
+      uri:
+        url: "http://localhost:9091/metrics/job/ansible_deployment"
+        method: POST
+        body: |
+          # TYPE ansible_job_status gauge
+          ansible_job_status{playbook="monitor_playbook"} {{ 1 if result.rc == 0 else 0 }}
+        body_format: raw
+        status_code: 202
+Part 5: Execution & Verification
+Step 1: Start the Infrastructure
+Bash
+
+docker-compose up -d
+Check if running: docker ps (You should see 5 containers)
+
+Step 2: Start the App
+Open a new terminal window:
+
+Bash
+
+python3 app.py
+Generate some traffic by visiting http://localhost:5000/, http://localhost:5000/slow, and http://localhost:5000/error in your browser.
+
+Step 3: Run the Playbook
+Bash
+
+ansible-playbook monitor_playbook.yml
+Part 6: Setting up Grafana (The Fun Part)
+Login: Go to http://localhost:3000. (User: admin / Pass: admin)
+
+Connect Data:
+
+Click Connections -> Data Sources -> Add data source.
+
+Select Prometheus.
+
+URL: http://prometheus:9090 (Note: internal container name, not localhost).
+
+Click Save & Test.
+
+Import Dashboards:
+
+Click Dashboards -> New -> Import.
+
+Linux Dashboard: Type ID 1860 -> Load -> Select Prometheus -> Import.
+
+Docker Dashboard: Type ID 14282 -> Load -> Select Prometheus -> Import.
+
+Create Custom Flask Dashboard:
+
+Create a New Dashboard -> Add Visualization.
+
+Metric: flask_http_request_total (Shows total hits).
+
+Metric: flask_http_request_duration_seconds_sum (Shows latency).
+
+Visualize Ansible:
+
+Add Visualization -> Metric: ansible_job_status.
+
+Change visualization type to Stat.
+
+It will show "1" (Green) for Success or "0" (Red) for Failure.
+
+Lab Complete! You now have a full professional monitoring stack running on your local machine.
