@@ -1,0 +1,37 @@
+2. The "VIP Onboarding" Script
+Key Concept: Loops, Conditionals, and Variable Lists.
+
+Playbook: onboarding.yml
+
+YAML
+
+---
+- name: Onboard New Developers
+  hosts: all
+  become: yes
+  vars:
+    users_to_add:
+      - { username: 'alice', role: 'dev' }
+      - { username: 'bob', role: 'dev' }
+      - { username: 'charlie', role: 'intern' } # The Twist
+
+  tasks:
+    - name: Create Users and Assign Groups
+      user:
+        name: "{{ item.username }}"
+        shell: /bin/bash
+        create_home: yes
+        # The Twist: Only add to sudo if they are NOT an intern
+        groups: "{{ 'sudo' if item.role != 'intern' else omit }}"
+        append: yes
+        # Force password change on next login
+        password_expire_max: 0 
+      loop: "{{ users_to_add }}"
+
+    - name: Set up Dummy SSH Keys (Optional Bonus)
+      authorized_key:
+        user: "{{ item.username }}"
+        state: present
+        # Usually, you'd read a file, but for a lab, we can generate a string
+        key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIK...dummykey... {{ item.username }}@lab"
+      loop: "{{ users_to_add }}"

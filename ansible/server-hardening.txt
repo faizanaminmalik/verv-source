@@ -1,0 +1,48 @@
+3. The "Server Hardening" Lockdown
+Key Concept: lineinfile (Regex) and Handlers to prevent accidental lockouts.
+
+Playbook: hardening.yml
+
+YAML
+
+---
+- name: Secure Server Configuration
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Install UFW
+      apt:
+        name: ufw
+        state: present
+        update_cache: yes
+
+    - name: Allow Essential Ports
+      ufw:
+        rule: allow
+        port: "{{ item }}"
+        proto: tcp
+      loop:
+        - '22'
+        - '80'
+        - '443'
+
+    - name: Enable UFW (Deny everything else by default)
+      ufw:
+        state: enabled
+        policy: deny
+
+    - name: Disable Root Login in SSH Config
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^#?PermitRootLogin'
+        line: 'PermitRootLogin no'
+        state: present
+        validate: 'sshd -t -f %s' # Validates config before saving!
+      notify: Restart SSH
+
+  handlers:
+    - name: Restart SSH
+      service:
+        name: ssh
+        state: restarted

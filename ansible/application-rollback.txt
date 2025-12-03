@@ -1,0 +1,62 @@
+4. The "Application Rollback"
+Key Concept: Error handling with Block, Rescue, and Always.
+
+Playbook: deploy_rollback.yml
+
+YAML
+
+---
+- name: Application Deployment with Safety Net
+  hosts: all
+  become: yes
+  vars:
+    app_dir: /var/www/myapp
+    backup_dir: /backup
+
+  tasks:
+    - name: Create Directories
+      file:
+        path: "{{ item }}"
+        state: directory
+      loop:
+        - "{{ app_dir }}"
+        - "{{ backup_dir }}"
+
+    - name: Create Dummy App File (Initial State)
+      copy:
+        content: "Version 1.0"
+        dest: "{{ app_dir }}/app.py"
+
+    # --- START OF SAFETY BLOCK ---
+    - block:
+        - name: Backup Current Application
+          archive:
+            path: "{{ app_dir }}/*"
+            dest: "{{ backup_dir }}/backup.tar.gz"
+            format: gz
+
+        - name: Update Application Code (Version 2.0)
+          copy:
+            content: "Version 2.0 (New Feature)"
+            dest: "{{ app_dir }}/app.py"
+
+        - name: Simulate Deployment Failure
+          command: /bin/false  # This returns exit code 1, triggering rescue
+          # Change to /bin/true to see the success path
+
+      rescue:
+        - name: DEPLOYMENT FAILED - Restoring Backup
+          unarchive:
+            src: "{{ backup_dir }}/backup.tar.gz"
+            dest: "{{ app_dir }}"
+            remote_src: yes
+          
+        - name: Notify Admin
+          debug:
+            msg: "The deployment failed. The system has been rolled back to the previous state."
+
+      always:
+        - name: Cleanup Backup File
+          file:
+            path: "{{ backup_dir }}/backup.tar.gz"
+            state: absent

@@ -1,0 +1,58 @@
+5. The "Docker Orchestrator"
+Key Concept: Python dependencies and Idempotency via Handlers.
+
+File: custom_index.html (Create this locally first)
+
+HTML
+
+<h1>Hello from Docker Managed by Ansible!</h1>
+Playbook: docker_deploy.yml
+
+YAML
+
+---
+- name: Deploy Nginx Container
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Install Docker and Pip
+      apt:
+        name:
+          - docker.io
+          - python3-pip
+          - python3-docker # Required for ansible docker modules
+        state: present
+        update_cache: yes
+
+    - name: Ensure Docker Service is Running
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Copy Custom HTML file to Host
+      copy:
+        src: custom_index.html
+        dest: /tmp/custom_index.html
+      notify: Restart Nginx Container
+
+    - name: Run Nginx Container
+      docker_container:
+        name: my_web_container
+        image: nginx:latest
+        state: started
+        restart_policy: always
+        ports:
+          - "8080:80"
+        volumes:
+          - /tmp/custom_index.html:/usr/share/nginx/html/index.html:ro
+
+  handlers:
+    # The Twist: If the HTML file changes, we must restart the container
+    # to pick up the changes immediately.
+    - name: Restart Nginx Container
+      docker_container:
+        name: my_web_container
+        state: started
+        restart: yes

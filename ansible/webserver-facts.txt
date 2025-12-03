@@ -1,0 +1,49 @@
+1. The "Self-Aware" Web Server
+Key Concept: Handling OS differences (RedHat vs Debian) and Templating.
+
+File: index.html.j2 (Save this first)
+
+HTML
+
+<h1>Server Report</h1>
+<p>This server is running on: <b>{{ ansible_hostname }}</b></p>
+<p>IP Address: <b>{{ ansible_default_ipv4.address }}</b></p>
+<p>Free Memory: <b>{{ ansible_memfree_mb }} MB</b></p>
+Playbook: webserver_facts.yml
+
+YAML
+
+---
+- name: Deploy Self-Aware Web Server
+  hosts: all
+  become: yes
+  vars:
+    # Logic to handle package names based on OS
+    apache_package: "{{ 'httpd' if ansible_os_family == 'RedHat' else 'apache2' }}"
+    apache_service: "{{ 'httpd' if ansible_os_family == 'RedHat' else 'apache2' }}"
+
+  tasks:
+    - name: Install Apache Web Server
+      package:
+        name: "{{ apache_package }}"
+        state: present
+
+    - name: Start and Enable Apache Service
+      service:
+        name: "{{ apache_service }}"
+        state: started
+        enabled: yes
+
+    - name: Deploy Custom Index Page from Template
+      template:
+        src: index.html.j2
+        dest: /var/www/html/index.html
+        mode: '0644'
+      # Restarting isn't strictly necessary for HTML changes, but good practice
+      notify: Restart Apache
+
+  handlers:
+    - name: Restart Apache
+      service:
+        name: "{{ apache_service }}"
+        state: restarted
