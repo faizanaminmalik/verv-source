@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verventech Training - Master Your Future</title>
+    <!-- Lucide Icons for visuals -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* --- CSS VARIABLES & RESET --- */
+        :root {
+            --primary: #0ea5e9; /* Sky Blue */
+            --primary-dark: #0284c7;
+            --secondary: #0f172a; /* Navy/Dark Slate */
+            --accent: #f59e0b; /* Amber for CTAs */
+            --light: #f8fafc;
+            --gray: #64748b;
+            --dark: #1e293b;
+            --white: #ffffff;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --radius: 8px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* --- NAVIGATION --- */
+        header {
+            background-color: var(--white);
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+
+        .logo span {
+            color: var(--primary);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: var(--secondary);
+            font-weight: 600;
+            padding: 0.5rem 0;
+            position: relative;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--primary);
+        }
+
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: var(--primary);
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--secondary);
+        }
+
+        /* --- PAGE STRUCTURE --- */
+        main {
+            flex: 1;
+        }
+
+        .page-section {
+            display: none; /* Hidden by default */
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        .page-section.active {
+            display: block; /* Show active page */
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        /* --- HOME PAGE STYLES --- */
+        .hero {
+            background: linear-gradient(135deg, var(--secondary) 0%, #1e3a8a 100%);
+            color: var(--white);
+            padding: 5rem 0;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            max-width: 700px;
+            margin: 0 auto 2.5rem;
+            color: #cbd5e1;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.8rem 1.8rem;
+            border-radius: var(--radius);
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .features {
+            padding: 4rem 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+
+        .feature-icon {
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        /* --- COURSES PAGE STYLES --- */
+        .courses-header {
+            background-color: var(--white);
+            padding: 3rem 0;
+            text-align: center;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .course-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+            padding: 4rem 1.5rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .course-card {
+            background: var(--white);
+            border-radius: var(--radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .course-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .course-image {
+            height: 180px;
+            background-color: #cbd5e1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gray);
+            font-size: 3rem;
+            background-size: cover;
+            background-position: center;
+        }
+        
+        /* Specific colors for placeholder images */
+        .bg-code { background: linear-gradient(45deg, #2c3e50, #3498db); color: white;}
+        .bg-data { background: linear-gradient(45deg, #16a085, #f39c12); color: white;}
+        .bg-cyber { background: linear-gradient(45deg, #8e44ad, #c0392b); color: white;}
+
+        .course-content {
+            padding: 1.5rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .course-tag {
+            display: inline-block;
+            background-color: #e0f2fe;
+            color: var(--primary-dark);
+            padding: 0.25rem 0.75rem;
+            border-radius: 99px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            width: fit-content;
+        }
+
+        .course-title {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+            color: var(--secondary);
+        }
+
+        .course-desc {
+            color: var(--gray);
+            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+            flex-grow: 1;
+        }
+
+        .course-footer {
+            border-top: 1px solid #e2e8f0;
+            padding-top: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .price {
+            font-weight: 700;
+            color: var(--secondary);
+            font-size: 1.2rem;
+        }
+
+        /* --- CONTACT PAGE STYLES --- */
+        .contact-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            padding: 4rem 1.5rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .contact-info h2 {
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            color: var(--secondary);
+        }
+
+        .info-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .info-item i {
+            color: var(--primary);
+            margin-top: 4px;
+        }
+
+        .contact-form {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--secondary);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #cbd5e1;
+            border-radius: var(--radius);
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+        }
+
+        /* --- FOOTER --- */
+        footer {
+            background-color: var(--secondary);
+            color: var(--white);
+            padding: 3rem 0;
+            margin-top: auto;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+        }
+
+        .footer-col h3 {
+            margin-bottom: 1.2rem;
+            color: var(--primary);
+        }
+
+        .footer-col ul {
+            list-style: none;
+        }
+
+        .footer-col ul li {
+            margin-bottom: 0.7rem;
+        }
+
+        .footer-col a {
+            color: #cbd5e1;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-col a:hover {
+            color: var(--white);
+        }
+
+        .copyright {
+            text-align: center;
+            padding-top: 2rem;
+            margin-top: 2rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        /* --- RESPONSIVE --- */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none; /* Hide nav on mobile for this simplified example */
+            }
+            
+            /* Simple mobile nav implementation for this demo */
+            .nav-links.active {
+                display: flex;
+                flex-direction: column;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: white;
+                padding: 1rem;
+                box-shadow: var(--shadow);
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .contact-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header>
+        <nav>
+            <a href="#" class="logo" onclick="switchPage('home')">
+                <i data-lucide="cpu"></i>
+                Verventech<span>Training</span>
+            </a>
+            <button class="mobile-menu-btn" onclick="toggleMenu()">
+                <i data-lucide="menu"></i>
+            </button>
+            <ul class="nav-links" id="nav-links">
+                <li><a href="#" class="nav-link active" onclick="switchPage('home')">Home</a></li>
+                <li><a href="#" class="nav-link" onclick="switchPage('courses')">Courses</a></li>
+                <li><a href="#" class="nav-link" onclick="switchPage('contact')">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <!-- PAGE 1: HOME -->
+        <div id="home" class="page-section active">
+            <section class="hero">
+                <div class="container">
+                    <h1>Launch Your Career in Tech</h1>
+                    <p>Industry-leading training programs designed to take you from beginner to professional in record time. Join Verventech today.</p>
+                    <a href="#" class="btn btn-primary" onclick="switchPage('courses')">Explore Courses</a>
+                </div>
+            </section>
+
+            <section class="container features">
+                <div class="feature-card">
+                    <div class="feature-icon"><i data-lucide="code-2" size="48"></i></div>
+                    <h3>Hands-on Coding</h3>
+                    <p>Learn by doing with our project-based curriculum that builds real-world skills.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i data-lucide="users" size="48"></i></div>
+                    <h3>Expert Mentors</h3>
+                    <p>Get guidance from senior developers currently working at top tech companies.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i data-lucide="award" size="48"></i></div>
+                    <h3>Certification</h3>
+                    <p>Earn industry-recognized certificates to showcase your skills on LinkedIn and resumes.</p>
+                </div>
+            </section>
+        </div>
+
+        <!-- PAGE 2: COURSES -->
+        <div id="courses" class="page-section">
+            <div class="courses-header">
+                <div class="container">
+                    <h2>Our Training Programs</h2>
+                    <p>Choose the path that fits your career goals.</p>
+                </div>
+            </div>
+
+            <div class="course-grid">
+                <!-- Course 1 -->
+                <div class="course-card">
+                    <div class="course-image bg-code">
+                        <i data-lucide="layout"></i>
+                    </div>
+                    <div class="course-content">
+                        <span class="course-tag">Most Popular</span>
+                        <h3 class="course-title">Full Stack Web Development</h3>
+                        <p class="course-desc">Master HTML, CSS, JavaScript, React, and Node.js. Build dynamic web applications from scratch.</p>
+                        <div class="course-footer">
+                            <span class="price">$999</span>
+                            <button class="btn btn-primary" onclick="alert('Enrollment feature coming soon!')">Enroll</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Course 2 -->
+                <div class="course-card">
+                    <div class="course-image bg-data">
+                        <i data-lucide="database"></i>
+                    </div>
+                    <div class="course-content">
+                        <span class="course-tag">Trending</span>
+                        <h3 class="course-title">Data Science & AI</h3>
+                        <p class="course-desc">Dive into Python, Machine Learning, and Data Analysis. Turn raw data into actionable insights.</p>
+                        <div class="course-footer">
+                            <span class="price">$1,299</span>
+                            <button class="btn btn-primary" onclick="alert('Enrollment feature coming soon!')">Enroll</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Course 3 -->
+                <div class="course-card">
+                    <div class="course-image bg-cyber">
+                        <i data-lucide="shield"></i>
+                    </div>
+                    <div class="course-content">
+                        <span class="course-tag">High Demand</span>
+                        <h3 class="course-title">Cyber Security Essentials</h3>
+                        <p class="course-desc">Learn network security, ethical hacking, and risk management to protect digital assets.</p>
+                        <div class="course-footer">
+                            <span class="price">$1,150</span>
+                            <button class="btn btn-primary" onclick="alert('Enrollment feature coming soon!')">Enroll</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAGE 3: CONTACT -->
+        <div id="contact" class="page-section">
+            <div class="contact-container">
+                <div class="contact-info">
+                    <h2>Get in Touch</h2>
+                    <p style="margin-bottom: 2rem; color: var(--gray);">Have questions about our courses or corporate training? Reach out to our admissions team.</p>
+                    
+                    <div class="info-item">
+                        <i data-lucide="map-pin"></i>
+                        <div>
+                            <h4>Location</h4>
+                            <p>123 Tech Park Avenue, Innovation City</p>
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <i data-lucide="mail"></i>
+                        <div>
+                            <h4>Email</h4>
+                            <p>admissions@verventech.com</p>
+                        </div>
+                    </div>
+
+                    <div class="info-item">
+                        <i data-lucide="phone"></i>
+                        <div>
+                            <h4>Phone</h4>
+                            <p>+1 (555) 123-4567</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="contact-form">
+                    <form onsubmit="event.preventDefault(); alert('Message sent! We will contact you shortly.');">
+                        <div class="form-group">
+                            <label for="name">Full Name</label>
+                            <input type="text" id="name" class="form-control" placeholder="John Doe" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email Address</label>
+                            <input type="email" id="email" class="form-control" placeholder="john@example.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="course">Interested Course</label>
+                            <select id="course" class="form-control">
+                                <option>Full Stack Web Development</option>
+                                <option>Data Science & AI</option>
+                                <option>Cyber Security</option>
+                                <option>Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="message">Message</label>
+                            <textarea id="message" rows="4" class="form-control" placeholder="How can we help you?"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">Send Message</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-col">
+                <h3>Verventech</h3>
+                <p style="color: #94a3b8;">Empowering the next generation of tech leaders through accessible, high-quality education.</p>
+            </div>
+            <div class="footer-col">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="#" onclick="switchPage('home')">Home</a></li>
+                    <li><a href="#" onclick="switchPage('courses')">All Courses</a></li>
+                    <li><a href="#" onclick="switchPage('contact')">Admissions</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h3>Legal</h3>
+                <ul>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                    <li><a href="#">Cookie Policy</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="copyright">
+            &copy; 2023 Verventech Training. All rights reserved.
+        </div>
+    </footer>
+
+    <script>
+        // Initialize Icons
+        lucide.createIcons();
+
+        // Mobile Menu Toggle
+        function toggleMenu() {
+            const navLinks = document.getElementById('nav-links');
+            navLinks.classList.toggle('active');
+        }
+
+        // Navigation Logic
+        function switchPage(pageId) {
+            // 1. Hide all pages
+            const pages = document.querySelectorAll('.page-section');
+            pages.forEach(page => {
+                page.classList.remove('active');
+            });
+
+            // 2. Show the selected page
+            const selectedPage = document.getElementById(pageId);
+            if (selectedPage) {
+                selectedPage.classList.add('active');
+            }
+
+            // 3. Update Nav Link Styling
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                // Simple check to set active class based on text content matching pageId loosely
+                if (link.getAttribute('onclick').includes(pageId)) {
+                    link.classList.add('active');
+                }
+            });
+
+            // 4. Close mobile menu if open
+            const mobileNav = document.getElementById('nav-links');
+            mobileNav.classList.remove('active');
+
+            // 5. Scroll to top
+            window.scrollTo(0, 0);
+        }
+    </script>
+</body>
+</html>
